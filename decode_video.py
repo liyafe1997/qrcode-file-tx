@@ -43,7 +43,7 @@ def end_of_file():
     with open('output.bin', 'wb') as f:
         f.write(final_bytes)
         f.close()
-    print("Done")
+    print("Done. The file is saved to output.bin")
     cap.release()
     cv2.destroyAllWindows()
     exit()
