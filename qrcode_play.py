@@ -11,11 +11,11 @@ import base64
 import time 
 
 
-QRCODE_NUMBER = 24
-QRCODE_SIZE = 6
-CHUNK_SIZE = 32
+QRCODE_NUMBER = 28
+QRCODE_SIZE = 5
+CHUNK_SIZE = 128
 FRAME_RATE = 10
-QR_CODE_NUMBER_PER_ROW = 6
+QR_CODE_NUMBER_PER_ROW = 7
 FILE_NAME = "test.png"
 
 
@@ -102,7 +102,7 @@ def format_chunk(content, current_split_index):
 def generate_qr(data):
     qr = qrcode.QRCode(
         version=5,
-        error_correction=qrcode.constants.ERROR_CORRECT_H,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
         box_size=QRCODE_SIZE,
         border=1,
     )

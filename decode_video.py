@@ -4,8 +4,8 @@ import numpy as np
 import base64
 
 
-QRCODE_NUMBER = 24
-VIDEO_FILE = "VID.mp4"
+QRCODE_NUMBER = 28
+VIDEO_FILE = "VID_20231007_014158.mp4"
 
 
 current_frame = 0
