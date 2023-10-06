@@ -3,7 +3,11 @@ Transferring Files via QRCode &amp; Camera(Video File)
 
 # Needed python packages
 ```
-pip3 install pillow pyqt5 opencv-python qrcode numpy
+pip3 install pillow pyqt5 opencv-python qrcode numpy pyzbar
+```
+If you are on macOS, maybe you have to install the `zbar` library by homebrew (It is needed by `pyzbar`)
+```
+brew install zbar
 ```
 
 # How to use
