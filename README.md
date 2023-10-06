@@ -19,6 +19,6 @@ pip3 install pillow pyqt5 opencv-python qrcode numpy
 
 6. Record a video of the QR code. Try to use higher video bitrate as much as possible.
 
-7. Edit `decode_video.py`, change `VIDEO_FILE` to your video file name.
+7. Edit `decode_video.py`, change `VIDEO_FILE` to your video file name. If you changed `QRCODE_NUMBER` in `qrcode_play.py`, you also have to change here.
 
 8. If the video can be decoded successfully, a `output.bin` will be generated. This should be as same as your input file. 
