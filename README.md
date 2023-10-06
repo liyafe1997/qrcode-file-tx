@@ -9,7 +9,7 @@ pip3 install pillow pyqt5 opencv-python qrcode numpy
 # How to use
 1. Edit `qrcode_play.py`, change `FILE_NAME` to your file.
 
-2. The parameter (E.g. `QRCODE_SIZE`, `QRCODE_NUMBER`, `FRAME_RATE`, etc.) is works well on my computer (1080p 23inch screen) and my phone(60FPS 1080p video recording). If you only can record 30FPS video, you can try to reduce the framerate. 
+2. The parameter (E.g. `QRCODE_SIZE`, `QRCODE_NUMBER`, `FRAME_RATE`, etc.) is works well on my computer (1080p 23inch screen) and my phone(60FPS 1080p video recording). You can adjust these parameters as you need. For example, if you only can record 30FPS video, you can try to reduce the framerate. 
 
 3. Chunk size must be the power of 2.
 
