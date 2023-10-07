@@ -1,6 +1,6 @@
 import sys
 import qrcode
-from PyQt5.QtWidgets import QApplication, QLabel, QVBoxLayout, QWidget, QGridLayout
+from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QGridLayout
 from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtCore import QTimer
 from PyQt5.QtCore import Qt
@@ -8,8 +8,7 @@ import pickle
 import os
 from qrcode.image.pil import PilImage
 import base64
-import time 
-
+import multiprocessing
 
 QRCODE_NUMBER = 28
 QRCODE_SIZE = 5
@@ -58,11 +57,6 @@ def format_chunk(content, current_split_index):
         formatted_splits.append(generate_qr(formatted_chunk))
         hex_representation = " ".join(f"{byte:02x} " for byte in formatted_chunk)
 
-        if (current_split_index == 12 and i == 126):
-            pass
-        if (current_split_index == 12 and i == 125):
-            pass
-
     # If there are remaining bytes, add them to the last chunk
     remaining_bytes = len(content) % CHUNK_SIZE
     if remaining_bytes > 0:
@@ -109,7 +103,7 @@ def generate_qr(data):
     base64_data = base64.b64encode(data)
     qr.add_data(base64_data)
     qr.make(fit=True)
-    img = qr.make_image(fill_color="black", back_color="white", image_factory=PilImage).convert('RGB')
+    img = qr.make_image(fill_color="black", back_color="white", image_factory=PilImage).convert('1')
     return img
 
 def int_to_bytes_with_length_prefix(n):
@@ -179,16 +173,16 @@ class QRCodeWidget(QWidget):
         for i, (chunk, label) in enumerate(zip(chunks, self.labels)):
             img = None
             if curent_frame == -1: # End of File, generate end QR code (All QR Code data = 0xFFFFAA003CFF00FF)
-                img = generate_qr(b"EndOfData")
+                img = generate_qr(b"EndOfData").convert('RGB')
                 qt_img = QImage(img.tobytes(), img.size[0], img.size[1], img.size[1]*3, QImage.Format_RGB888)
                 pixmap = QPixmap.fromImage(qt_img)
                 label.setPixmap(pixmap)
             else:
                 if(i == (QRCODE_NUMBER - 1)): # last QR code for sync
                     qr_index_bytes = bytes([QRCODE_NUMBER - 1]) 
-                    img = generate_qr(qr_index_bytes + int_to_bytes_with_length_prefix(curent_frame)+ int_to_bytes_with_length_prefix(frames_number))
+                    img = generate_qr(qr_index_bytes + int_to_bytes_with_length_prefix(curent_frame)+ int_to_bytes_with_length_prefix(frames_number)).convert('RGB')
                 else: # data QR codes
-                    img = chunk[curent_frame]
+                    img = chunk[curent_frame].convert('RGB')
 
                 qt_img = QImage(img.tobytes(), img.size[0], img.size[1], img.size[1]*3, QImage.Format_RGB888)
                 pixmap = QPixmap.fromImage(qt_img)
@@ -208,11 +202,32 @@ class QRCodeWidget(QWidget):
 
     def keyPressEvent(self, event):
         # Press any key to exit
-        self.close()
         exit()
 
 def all_elements_equal(lst):
     return all(x == lst[0] for x in lst)
+
+
+def qr_mp_wrapper(args):
+    # 包装函数，返回(索引, 结果)
+    i, data = args
+    return i, format_chunk(data, i)
+
+
+def generate_qr_concurrently(split_data):
+    pool = multiprocessing.Pool(multiprocessing.cpu_count())
+    
+    results = pool.map(qr_mp_wrapper, enumerate(split_data))
+
+    pool.close()
+    pool.join()
+    
+    sorted_results = sorted(results, key=lambda x: x[0])
+
+    for i, result in sorted_results:
+        chunks[i] = result
+    frames_count = [len(res[1]) for res in sorted_results]
+    return frames_count
 
 def main():
     global frames_number
@@ -242,11 +257,8 @@ def main():
             chunks.append([])
 
         chunks.append(0) # The last one for the last QR code for sync, it will be generated during playing
-        print("Generating QR codes...\n\n")
-        for i, data in enumerate(split_data):
-            chunks[i] = format_chunk(data, i)
-            frames_count.append(len(chunks[i]))
-            pass
+        print("Generating QR codes by multiprocessing ...\n\n")
+        frames_count = generate_qr_concurrently(split_data)
         print(f"\n\nGroups of QR codes for data: {len(frames_count)}")
         if(all_elements_equal(frames_count)):
             print(f"All QR codes have the same number of frames:{frames_count[0]}. Good!")
@@ -267,6 +279,7 @@ def main():
     else:
         frames_number = loaded_data["frames_number"]
         chunks = loaded_data["chunks"]
+        del loaded_data
         print("QR codes loaded from cache.")
     
     # Saving data
