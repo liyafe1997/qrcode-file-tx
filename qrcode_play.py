@@ -9,6 +9,7 @@ import os
 from qrcode.image.pil import PilImage
 import base64
 import multiprocessing
+import gzip
 
 QRCODE_NUMBER = 28
 QRCODE_SIZE = 5
@@ -236,7 +237,7 @@ def main():
     Cahce_available = True
     if os.path.exists('qr_cache.pickle'):
         # Load QR code cache
-        with open('qr_cache.pickle', 'rb') as f:
+        with gzip.open('qr_cache.pickle', 'rb') as f:
             print("Loading QR codes from qr_cache.pickle...")
             loaded_data = pickle.load(f)
         try:
@@ -273,7 +274,7 @@ def main():
         saving_dict["QRCODE_NUMBER"] = QRCODE_NUMBER
         saving_dict["CHUNK_SIZE"] = CHUNK_SIZE
         saving_dict["QRCODE_SIZE"] = QRCODE_SIZE
-        with open('qr_cache.pickle', 'wb') as f:
+        with gzip.open('qr_cache.pickle', 'wb') as f:
             pickle.dump(saving_dict, f)
             f.close()
     else:
